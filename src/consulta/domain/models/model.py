@@ -24,3 +24,7 @@ class Medico:
         del self.agenda[consulta]
 
 
+def agendar_consulta(medico: Medico, paciente: Paciente, horario: date):
+    if not medico.pode_agendar_consulta(horario):
+        return 'Horário indisponível'
+    medico.agendar_consulta(paciente, horario)

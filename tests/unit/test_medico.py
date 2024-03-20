@@ -35,6 +35,7 @@ def test_nao_pode_marcar_horario_preenchido_na_agenda_do_medico():
 
     assert not medico.pode_agendar_consulta(datetime(2021, 1, 1, 8, 0))
 
+
 def test_deve_liberar_horario_quando_cancelar_consulta():
     medico = Medico(nome='Luisa', crm='1234')
     paciente = Paciente(nome='Maria', cpf='12345678901')
