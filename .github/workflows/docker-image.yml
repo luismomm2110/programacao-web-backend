@@ -20,4 +20,4 @@ jobs:
         run: docker build -t my-python-app .
 
       - name: Execute tests
-        run: docker run --name my-app my-python-app pytest /tests
+        run: docker run --name my-app my-python-app pytest
