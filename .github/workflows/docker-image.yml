@@ -19,8 +19,5 @@ jobs:
       - name: Build Docker image
         run: docker build -t my-python-app .
 
-      - name: Run container
-        run: docker run --name my-app -d my-python-app
-
       - name: Execute tests
-        run: docker exec my-app pytest /tests
+        run: docker run --name my-app my-python-app pytest
