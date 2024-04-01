@@ -5,9 +5,10 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from consulta.orm import metadata, start_mappers
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
+from consulta.orm import metadata, start_mappers
 
 
 @pytest.fixture
