@@ -1,8 +1,6 @@
 from datetime import datetime
 
-import pytest
-
-from consulta.domain.models.model import Medico, Paciente, agendar_consulta
+from consulta.domain.models.model import Medico, Paciente, agendar_consulta, Consulta
 
 
 def test_deve_marcar_horario_preenchido_na_agenda_do_medico():
@@ -10,14 +8,18 @@ def test_deve_marcar_horario_preenchido_na_agenda_do_medico():
 
     agendar_consulta(
         medico,
-        paciente,
+        paciente.id,
         datetime(2021, 1, 1, 8, 0)
     )
 
     assert medico.agenda == {
         datetime(
             2021, 1, 1, 8, 0
-        ): paciente
+        ): Consulta(
+            medico_id=medico.id,
+            paciente_id=paciente.id,
+            horario=datetime(2021, 1, 1, 8, 0)
+        )
     }
 
 

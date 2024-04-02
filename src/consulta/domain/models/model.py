@@ -28,11 +28,11 @@ class Medico:
         self.crm = crm
         self.agenda: dict = {}
 
-    def agendar_consulta(self, paciente: Paciente, horario: date):
-        self.agenda[horario] = paciente
+    def agendar_consulta(self, paciente_id: int, horario: date):
+        self.agenda[horario] = Consulta(self.id, paciente_id, horario)
 
     def pode_agendar_consulta(self, horario: date):
-        return horario not in self.agenda
+        return horario not in {consulta.horario for consulta in self.agenda.values()}
 
     def cancelar_consulta(self, consulta: date):
         del self.agenda[consulta]
@@ -49,15 +49,19 @@ class Medico:
         return hash(self.crm)
 
 
-def agendar_consulta(medico: Medico, paciente: Paciente, horario: date):
+def agendar_consulta(medico: Medico, paciente_id: int, horario: date):
     if not medico.pode_agendar_consulta(horario):
         return 'Horário indisponível'
-    medico.agendar_consulta(paciente, horario)
+    medico.agendar_consulta(paciente_id, horario)
 
 
 @dataclass(unsafe_hash=True)
 class Consulta:
-    id: int
-    medico_id: int
-    paciente_id: int
+    medico_id: uuid4
+    paciente_id: uuid4
     horario: date
+
+    def __eq__(self, other):
+        if not isinstance(other, Consulta):
+            return False
+        return self.medico_id == other.medico_id and self.paciente_id == other.paciente_id and self.horario == other.horario
