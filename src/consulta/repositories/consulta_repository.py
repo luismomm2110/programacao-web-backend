@@ -47,3 +47,29 @@ class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
         consulta = self.get(consulta_id)
         self.session.delete(consulta)
         self.session.commit()
+
+class FakeConsultaRepository(AbstractConsultaRepository):
+    def __init__(self):
+        self.consultas = []
+
+    def get(self, consulta_id: str) -> Consulta:
+        for consulta in self.consultas:
+            if consulta.id == consulta_id:
+                return consulta
+
+    def add(self, consulta: Consulta) -> None:
+        self.consultas.append(consulta)
+
+    def list(self) -> List[Consulta]:
+        return self.consultas
+
+    def update(self, consulta: Consulta) -> None:
+        for i, c in enumerate(self.consultas):
+            if c.id == consulta.id:
+                self.consultas[i] = consulta
+
+    def delete(self, consulta_id: str) -> None:
+        for i, c in enumerate(self.consultas):
+            if c.id == consulta_id:
+                del self.consultas[i]
+                break

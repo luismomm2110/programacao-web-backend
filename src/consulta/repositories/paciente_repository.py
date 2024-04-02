@@ -48,3 +48,31 @@ class SqlAlchemyPacienteRepository(AbstractPacienteRepository):
         paciente = self.get_paciente(paciente_id)
         self.session.delete(paciente)
         self.session.commit()
+
+
+class FakePacienteRepository(AbstractPacienteRepository):
+    def __init__(self):
+        self.pacientes = []
+
+    def get_paciente(self, paciente_id: int) -> Paciente:
+        for paciente in self.pacientes:
+            if paciente.id == paciente_id:
+                return paciente
+        return None
+
+    def get_pacientes(self) -> List[Paciente]:
+        return self.pacientes
+
+    def create_paciente(self, paciente: Paciente) -> Paciente:
+        self.pacientes.append(paciente)
+        return paciente
+
+    def update_paciente(self, paciente: Paciente) -> Paciente:
+        for i, p in enumerate(self.pacientes):
+            if p.id == paciente.id:
+                self.pacientes[i] = paciente
+                return paciente
+        return None
+
+    def delete_paciente(self, paciente_id: int) -> None:
+        self.pacientes = [p for p in self.pacientes if p.id != paciente_id]

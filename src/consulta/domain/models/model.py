@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from datetime import date
+from uuid import uuid4
 
 
 class Paciente:
     def __init__(self, nome: str, cpf: str):
+        self.id = uuid4()
         self.nome = nome
         self.cpf = cpf
 
@@ -21,6 +23,7 @@ class Paciente:
 
 class Medico:
     def __init__(self, nome: str, crm: str):
+        self.id = uuid4()
         self.nome = nome
         self.crm = crm
         self.agenda: dict = {}
