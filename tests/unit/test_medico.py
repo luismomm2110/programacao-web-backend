@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from consulta.domain.models.model import Medico, Paciente
+from consulta.domain.models.model import Medico, Paciente, Consulta
 
 
 def test_deve_marcar_horario_preenchido_na_agenda_do_medico():
@@ -10,14 +10,18 @@ def test_deve_marcar_horario_preenchido_na_agenda_do_medico():
     paciente = Paciente(nome='Maria', cpf='12345678901')
 
     medico.agendar_consulta(
-        paciente,
+        paciente.id,
         datetime(2021, 1, 1, 8, 0)
     )
 
     assert medico.agenda == {
         datetime(
             2021, 1, 1, 8, 0
-        ): paciente
+        ): Consulta(
+            medico_id=medico.id,
+            paciente_id=paciente.id,
+            horario=datetime(2021, 1, 1, 8, 0)
+        )
     }
 
 
@@ -31,7 +35,7 @@ def test_nao_pode_marcar_horario_preenchido_na_agenda_do_medico():
     medico = Medico(nome='Luisa', crm='1234')
     paciente = Paciente(nome='Maria', cpf='12345678901')
 
-    medico.agendar_consulta(paciente, datetime(2021, 1, 1, 8, 0))
+    medico.agendar_consulta(paciente.id, datetime(2021, 1, 1, 8, 0))
 
     assert not medico.pode_agendar_consulta(datetime(2021, 1, 1, 8, 0))
 
@@ -40,7 +44,7 @@ def test_deve_liberar_horario_quando_cancelar_consulta():
     medico = Medico(nome='Luisa', crm='1234')
     paciente = Paciente(nome='Maria', cpf='12345678901')
 
-    medico.agendar_consulta(paciente, datetime(2021, 1, 1, 8, 0))
+    medico.agendar_consulta(paciente.id, datetime(2021, 1, 1, 8, 0))
     medico.cancelar_consulta(datetime(2021, 1, 1, 8, 0))
 
     assert medico.agenda == {}

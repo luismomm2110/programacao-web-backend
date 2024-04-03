@@ -56,5 +56,5 @@ def test_consulta_mapper_consegue_salvar_no_banco_de_dados(session):
         {'medico_id': 1, 'paciente_id': 1, 'horario': '2021-10-10'}
     )
 
-    expected = model.Consulta(1, 1, 1, date(2021, 10, 10))
+    expected = model.Consulta(1, 1, date(2021, 10, 10))
     assert session.query(model.Consulta).one() == expected
