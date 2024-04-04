@@ -65,3 +65,4 @@ class Consulta:
         if not isinstance(other, Consulta):
             return False
         return self.medico_id == other.medico_id and self.paciente_id == other.paciente_id and self.horario == other.horario
+    
