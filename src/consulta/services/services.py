@@ -20,3 +20,7 @@ def marcar_consulta(repositories, dados, session):
     session.commit()
 
     return 'Consulta marcada com sucesso'
+
+
+def criar_conta_paciente(repositories, dados, session):
+    
