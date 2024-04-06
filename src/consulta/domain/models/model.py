@@ -5,9 +5,10 @@ from uuid import uuid4
 
 
 class Paciente:
-    def __init__(self, paciente_id: int, nome: str, cpf: str):
+    def __init__(self, paciente_id: int, nome: str, email: str, cpf: str):
         self.id = paciente_id
         self.nome = nome
+        self.email = email
         self.cpf = cpf
 
     def __repr__(self):

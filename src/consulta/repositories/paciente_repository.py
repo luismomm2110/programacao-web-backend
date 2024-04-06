@@ -33,6 +33,9 @@ class SqlAlchemyPacienteRepository(AbstractPacienteRepository):
     def get(self, paciente_id: int) -> Paciente:
         return self.session.query(Paciente).filter_by(id=paciente_id).first()
 
+    def get_by_email(self, email: str) -> Paciente:
+        return self.session.query(Paciente).filter_by(email=email).first()
+
     def get_all(self) -> List[Paciente]:
         return self.session.query(Paciente).all()
 

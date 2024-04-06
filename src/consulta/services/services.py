@@ -1,7 +1,9 @@
 import random
 
+from auth.auth_repository import SqlAlchemyAuthUserRepository
 from auth.model import AuthUser
 from consulta.domain.models.model import Consulta, agendar_consulta, Paciente
+from consulta.repositories.paciente_repository import SqlAlchemyPacienteRepository
 
 
 def marcar_consulta(repositories, dados, session):
@@ -23,19 +25,26 @@ def marcar_consulta(repositories, dados, session):
     return 'Consulta marcada com sucesso'
 
 
-def criar_conta_paciente(repositories, dados, session):
+def criar_conta_paciente(
+        auth_repository: SqlAlchemyAuthUserRepository,
+        paciente_repository: SqlAlchemyPacienteRepository,
+        dados,
+        session):
+    if paciente_repository.get_by_email(dados['email']):
+        raise ValueError('Paciente já cadastrado')
     paciente = Paciente(
         paciente_id=random.randint(1, 100000),
+        email=dados['email'],
         nome=dados['nome'],
         cpf=dados['cpf']
     )
-    repositories[1].create(paciente)
+    paciente_repository.create(paciente)
     usuario = AuthUser(
         user_id=random.randint(1, 100000),
         username=dados['nome'],
         password=dados['password'],
         entity_id=paciente.id,
     )
-    repositories[0].add(usuario)
+    auth_repository.add(usuario)
     session.commit()
     return paciente

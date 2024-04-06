@@ -19,6 +19,7 @@ medicos = Table(
 pacientes = Table(
     'paciente', metadata,
     Column('id', Integer, primary_key=True),
+    Column('email', String(50)),
     Column('nome', String(50)),
     Column('cpf', String(11))
 )
