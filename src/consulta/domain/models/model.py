@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from datetime import date
+from random import random
 from uuid import uuid4
 
 
 class Paciente:
-    def __init__(self, nome: str, cpf: str):
-        self.id = uuid4()
+    def __init__(self, paciente_id: int, nome: str, cpf: str):
+        self.id = paciente_id
         self.nome = nome
         self.cpf = cpf
 
@@ -22,8 +23,8 @@ class Paciente:
 
 
 class Medico:
-    def __init__(self, nome: str, crm: str):
-        self.id = uuid4()
+    def __init__(self, medico_id: int, nome: str, crm: str):
+        self.id = medico_id
         self.nome = nome
         self.crm = crm
         self.agenda: dict = {}
@@ -57,8 +58,8 @@ def agendar_consulta(medico: Medico, paciente_id: int, horario: date):
 
 @dataclass(unsafe_hash=True)
 class Consulta:
-    medico_id: uuid4
-    paciente_id: uuid4
+    medico_id: int
+    paciente_id: int
     horario: date
 
     def __eq__(self, other):

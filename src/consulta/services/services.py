@@ -1,6 +1,7 @@
-from uuid import uuid4
+import random
 
-from consulta.domain.models.model import Consulta, agendar_consulta
+from auth.model import AuthUser
+from consulta.domain.models.model import Consulta, agendar_consulta, Paciente
 
 
 def marcar_consulta(repositories, dados, session):
@@ -23,4 +24,18 @@ def marcar_consulta(repositories, dados, session):
 
 
 def criar_conta_paciente(repositories, dados, session):
-    
+    paciente = Paciente(
+        paciente_id=random.randint(1, 100000),
+        nome=dados['nome'],
+        cpf=dados['cpf']
+    )
+    repositories[1].create(paciente)
+    usuario = AuthUser(
+        user_id=random.randint(1, 100000),
+        username=dados['nome'],
+        password=dados['password'],
+        entity_id=paciente.id,
+    )
+    repositories[0].add(usuario)
+    session.commit()
+    return paciente
