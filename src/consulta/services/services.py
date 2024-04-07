@@ -42,6 +42,7 @@ def criar_conta_paciente(
     usuario = AuthUser(
         user_id=random.randint(1, 100000),
         username=dados['nome'],
+        email=dados['email'],
         password=dados['password'],
         entity_id=paciente.id,
     )

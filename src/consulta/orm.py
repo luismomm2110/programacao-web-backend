@@ -36,6 +36,7 @@ users = Table(
     'auth_user', metadata,
     Column('id', Integer, primary_key=True),
     Column('username', String(50)),
+    Column('email', String(50)),
     Column('password', String(200)),
     Column('entity_id', Integer)
 )
