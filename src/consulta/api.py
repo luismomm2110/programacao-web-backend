@@ -14,7 +14,6 @@ from services import services
 engine = create_engine('postgresql://user:password@localhost:5432/consultas')
 get_session = sessionmaker(bind=engine)
 app = Flask(__name__)
-CORS(app)
 orm.start_mappers()
 orm.metadata.create_all(engine)
 
@@ -22,6 +21,7 @@ app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # Change this!
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
 jwt = JWTManager(app)
 
+CORS(app, suports_credentials=True)
 
 @app.route('/criar_paciente', methods=['POST'])
 def criar_paciente():
@@ -46,7 +46,7 @@ def login():
     auth_repository = SqlAlchemyAuthUserRepository(session)
     user = auth_repository.get_user_by_email(request.json['email'])
     if user and user.password == request.json['password']:
-        return jsonify({"access_token": create_access_token(identity=user.id)}), 200
+        return jsonify({"token": create_access_token(identity=user.id)}), 200
     return '', 401
 
 if __name__ == '__main__':
