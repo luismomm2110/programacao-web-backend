@@ -1,7 +1,10 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Date
+import uuid
+
+from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Date, UUID
 from sqlalchemy.orm import mapper, relationship, registry
 
 from consulta.domain.models import model
+from auth import model as auth_model
 
 metadata = MetaData()
 
@@ -16,6 +19,7 @@ medicos = Table(
 pacientes = Table(
     'paciente', metadata,
     Column('id', Integer, primary_key=True),
+    Column('email', String(50)),
     Column('nome', String(50)),
     Column('cpf', String(11))
 )
@@ -28,6 +32,16 @@ consultas = Table(
     Column('horario', Date))
 
 
+users = Table(
+    'auth_user', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('username', String(50)),
+    Column('email', String(50)),
+    Column('password', String(200)),
+    Column('entity_id', Integer)
+)
+
+
 def start_mappers():
     reg = registry()
 
@@ -37,3 +51,4 @@ def start_mappers():
         'medico': relationship(model.Medico),
         'paciente': relationship(model.Paciente)
     })
+    reg.map_imperatively(auth_model.AuthUser, users)
