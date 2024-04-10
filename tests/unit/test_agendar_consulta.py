@@ -29,12 +29,12 @@ def test_deve_retornar_horario_indisponivel_quando_nao_pode_agendar_consulta():
 
     agendar_consulta(
         medico,
-        paciente,
+        paciente.id,
         data,
     )
     erro = agendar_consulta(
         medico,
-        paciente,
+        paciente.id,
         data,
     )
 
@@ -42,6 +42,11 @@ def test_deve_retornar_horario_indisponivel_quando_nao_pode_agendar_consulta():
 
 
 def criar_medico_e_paciente():
-    medico = Medico(nome='Luisa', crm='1234')
-    paciente = Paciente(nome='Maria', cpf='12345678901')
+    medico = Medico(nome='Luisa', crm='1234', medico_id=1)
+    paciente = Paciente(
+        nome='Maria',
+        cpf='12345678901',
+        paciente_id=1,
+        email='luismom@gmail.com'
+    )
     return medico, paciente

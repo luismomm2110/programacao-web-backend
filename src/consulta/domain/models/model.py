@@ -50,6 +50,13 @@ class Medico:
     def __hash__(self):
         return hash(self.crm)
 
+    def to_json(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'crm': self.crm
+        }
+
 
 def agendar_consulta(medico: Medico, paciente_id: int, horario: date):
     if not medico.pode_agendar_consulta(horario):

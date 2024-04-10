@@ -10,7 +10,7 @@ class AbstractMedicoRepository(ABC):
         pass
 
     @abstractmethod
-    def get_medicos(self) -> List[Medico]:
+    def get_all(self) -> List[Medico]:
         pass
 
     @abstractmethod
@@ -33,7 +33,7 @@ class SqlAlchemyMedicoRepository(AbstractMedicoRepository):
     def get(self, medico_id: int) -> Medico:
         return self.session.query(Medico).filter_by(id=medico_id).first()
 
-    def get_medicos(self) -> List[Medico]:
+    def get_all(self) -> List[Medico]:
         return self.session.query(Medico).all()
 
     def add(self, medico: Medico) -> Medico:
@@ -60,7 +60,7 @@ class FakeMedicoRepository(AbstractMedicoRepository):
             if medico.id == medico_id:
                 return medico
 
-    def get_medicos(self) -> List[Medico]:
+    def get_all(self) -> List[Medico]:
         return self.medicos
 
     def add(self, medico: Medico) -> Medico:

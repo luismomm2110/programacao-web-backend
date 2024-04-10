@@ -8,8 +8,7 @@ from consulta.services import services
 
 
 def test_marca_consulta():
-    paciente = Paciente('Fulano', '123.456.789-00')
-    medico = Medico('Dr. House', '1234')
+    paciente, medico = _criar_paciente(), _criar_medico()
     paciente_repository = FakePacienteRepository()
     medico_repository = FakeMedicoRepository()
     consulta_repository = FakeConsultaRepository()
@@ -30,8 +29,7 @@ def test_marca_consulta():
 
 
 def test_deve_retornar_horario_indisponivel():
-    paciente = Paciente('Fulano', '123.456.789-00')
-    medico = Medico('Dr. House', '1234')
+    paciente, medico = _criar_paciente(), _criar_medico()
     paciente_repository = FakePacienteRepository()
     medico_repository = FakeMedicoRepository()
     consulta_repository = FakeConsultaRepository()
@@ -42,7 +40,7 @@ def test_deve_retornar_horario_indisponivel():
     dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': horario}
     services.marcar_consulta(repositories, dados, FakeSession())
 
-    outro_paciente = Paciente('Sicrano', '987.654.321-00')
+    outro_paciente = _criar_paciente(paciente_id=2, nome='Maria', cpf='123.456.789-00')
     dados = {'paciente_id': outro_paciente.id, 'medico_id': medico.id, 'horario': horario}
     resultado = services.marcar_consulta(repositories, dados, FakeSession())
 
@@ -50,7 +48,7 @@ def test_deve_retornar_horario_indisponivel():
     assert len(consulta_repository.consultas) == 1
 
 def test_deve_retornar_medico_nao_encontrado():
-    paciente = Paciente('Fulano', '123.456.789-00')
+    paciente = _criar_paciente()
     paciente_repository = FakePacienteRepository()
     medico_repository = FakeMedicoRepository()
     consulta_repository = FakeConsultaRepository()
@@ -70,3 +68,16 @@ class FakeSession():
 
     def commit(self):
         self.committed = True
+
+
+def _criar_paciente(**kwargs):
+    default = {'paciente_id': 1, 'nome': 'Fulano', 'cpf': '123.456.789-00', 'email': 'luis@gmail.com'}
+    paciente = Paciente(**{**default, **kwargs})
+
+    return paciente
+
+
+def _criar_medico():
+    medico = Medico(1, 'Dr. House', '1234')
+
+    return medico
