@@ -7,12 +7,14 @@ from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import consulta.services.pacientes_services
 import orm
 from auth.auth_repository import SqlAlchemyAuthUserRepository
 from consulta.domain.models.model import Medico
 from consulta.repositories.medico_repository import SqlAlchemyMedicoRepository
 from consulta.repositories.paciente_repository import SqlAlchemyPacienteRepository
-from services import services
+from consulta.services.medicos_services import criar_medico
+from services import consulta_services
 
 
 engine = create_engine('postgresql://user:password@localhost:5432/consultas')
@@ -37,22 +39,28 @@ def listar_medicos():
 
 
 @app.route('/medicos', methods=['POST'])
-def criar_medico():
+def cria_medico():
     session = get_session()
     medico_repository = SqlAlchemyMedicoRepository(session)
-    nome, crm = request.json['nome'], request.json['crm']
-    medico = Medico(random.randint(1, 100000), nome, crm)
-    medico = medico_repository.add(medico)
+    try:
+        medico = criar_medico(
+            session,
+            medico_repository,
+            request.json['nome'],
+            request.json['crm']
+        )
+    except ValueError as e:
+        return str(e), 400
     return jsonify({"id": medico.id}), 201
 
 
-@app.route('/criar_paciente', methods=['POST'])
+@app.route('/paciente', methods=['POST'])
 def criar_paciente():
     session = get_session()
     auth_repository = SqlAlchemyAuthUserRepository(session)
     paciente_repository = SqlAlchemyPacienteRepository(session)
     try:
-        paciente = services.criar_conta_paciente(
+        paciente = consulta.services.pacientes_services.criar_conta_paciente(
             auth_repository,
             paciente_repository,
             request.json,
