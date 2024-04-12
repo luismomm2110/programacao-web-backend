@@ -1,21 +1,23 @@
 import random
 
 from consulta.domain.models.model import Medico
+from consulta.services.unit_of_work import AbstractUnitOfWork
 
 
-def tem_horario_disponivel(consulta_repository, medico_id, data):
-    consultas = consulta_repository.get_by_medico_id(medico_id)
-    return data not in {consulta.horario for consulta in consultas}
+def tem_horario_disponivel(medico_id, data, uow):
+    with uow:
+        consultas = uow.consultas.get_by_medico_id(medico_id)
+        return data not in {consulta.horario for consulta in consultas}
 
 
-def criar_medico(sessao, medico_repository, nome, crm):
-    medico = Medico(
-        medico_id=random.randint(1, 100000),
-        nome=nome,
-        crm=crm
-    )
-    medico_repository.add(medico)
+def criar_medico(nome, crm, uow: AbstractUnitOfWork):
+    with uow:
+        medico = Medico(
+            medico_id=random.randint(1, 100000),
+            nome=nome,
+            crm=crm
+        )
+        uow.medicos.add(medico)
+        uow.commit()
 
-    sessao.commit()
-
-    return medico
+        return medico
