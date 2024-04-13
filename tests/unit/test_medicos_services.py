@@ -1,43 +1,46 @@
 from consulta.domain.models.model import Paciente, Medico
-from consulta.repositories.consulta_repository import FakeConsultaRepository
-from consulta.repositories.medico_repository import FakeMedicoRepository
+from consulta.repositories import medico_repository
 from consulta.services.consulta_services import marcar_consulta
-from consulta.services.medicos_services import tem_horario_disponivel
+from consulta.services.medicos_services import tem_horario_disponivel, criar_medico
+from consulta.services.unit_of_work import FakeUnitOfWork
 
 
 def test_pode_marcar_consulta_quando_tem_horario_disponivel():
-    medico_repository = FakeMedicoRepository()
-    consulta_repository = FakeConsultaRepository()
+    uow = FakeUnitOfWork()
     medico = _criar_medico()
     paciente = _criar_paciente()
-    medico_repository.add(medico)
+    criar_medico(medico.nome, medico.crm, uow)
     dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': '2022-01-01'}
-    marcar_consulta(FakeSession(), medico_repository, consulta_repository, dados)
+    marcar_consulta(dados, uow)
 
-    resultado = tem_horario_disponivel(consulta_repository, medico.id, '2022-02-01')
+    resultado = tem_horario_disponivel(medico.id, '2022-02-01', uow)
 
     assert resultado is True
 
 
 def test_nao_pode_marcar_consulta_quando_nao_tem_horario_disponivel():
-    medico_repository = FakeMedicoRepository()
-    consulta_repository = FakeConsultaRepository()
+    uow = FakeUnitOfWork()
     medico = _criar_medico()
+    uow.medicos.add(medico)
     paciente = _criar_paciente()
-    medico_repository.add(medico)
+    uow.pacientes.create(paciente)
     dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': '2022-01-01'}
-    marcar_consulta(FakeSession(), medico_repository, consulta_repository, dados)
+    marcar_consulta(dados, uow)
 
-    resultado = tem_horario_disponivel(consulta_repository, medico.id, '2022-01-01')
+    resultado = tem_horario_disponivel(medico.id, '2022-01-01', uow)
 
     assert resultado is False
 
-class FakeSession:
-    def __init__(self):
-        self.committed = False
 
-    def commit(self):
-        self.committed = True
+def test_cria_medico():
+    uow = FakeUnitOfWork()
+
+    criar_medico('Dr. House', '1234', uow)
+
+    assert len(uow.medicos.get_all()) == 1
+    medico = uow.medicos.get_all()[0]
+    assert medico.nome == 'Dr. House'
+
 
 def _criar_paciente(**kwargs):
     default = {'paciente_id': 1, 'nome': 'Fulano', 'cpf': '123.456.789-00', 'email': 'luis@gmail.com'}

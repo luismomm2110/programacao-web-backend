@@ -5,15 +5,13 @@ from consulta.services.unit_of_work import AbstractUnitOfWork
 
 def marcar_consulta(dados, uow: AbstractUnitOfWork):
     with uow:
-        consulta_repository = uow.consultas
-        medico_repository = uow.medicos
-        medico = medico_repository.get(dados['medico_id'])
+        medico = uow.medicos.get(dados['medico_id'])
         if not medico:
             return 'Médico não encontrado'
-        if not tem_horario_disponivel(consulta_repository, medico.id, dados['horario']):
+        if not tem_horario_disponivel(medico.id, dados['horario'], uow):
             return 'Horário indisponível'
-        medico_repository.update(medico)
-        consulta_repository.add(Consulta(
+        uow.medicos.update(medico)
+        uow.consultas.add(Consulta(
             medico_id=medico.id,
             paciente_id=dados['paciente_id'],
             horario=dados['horario']

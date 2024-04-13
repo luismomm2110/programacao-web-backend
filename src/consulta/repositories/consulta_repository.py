@@ -14,6 +14,10 @@ class AbstractConsultaRepository(ABC):
         pass
 
     @abstractmethod
+    def get_by_paciente_id(self, paciente_id: int) -> List[Consulta]:
+        pass
+
+    @abstractmethod
     def add(self, consulta: Consulta) -> None:
         pass
 
@@ -29,8 +33,13 @@ class AbstractConsultaRepository(ABC):
     def delete(self, consulta_id: str) -> None:
         pass
 
+    @abstractmethod
+    def get_all(self):
+        pass
+
 
 class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
+
     def __init__(self, session):
         self.session = session
 
@@ -39,6 +48,9 @@ class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
 
     def get_by_medico_id(self, medico_id: str) -> List[Consulta]:
         return self.session.query(Consulta).filter_by(medico_id=medico_id).all()
+
+    def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
+        return self.session.query(Consulta).filter_by(paciente_id=paciente_id).all()
 
     def add(self, consulta: Consulta) -> None:
         self.session.add(consulta)
@@ -55,6 +67,8 @@ class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
         self.session.delete(consulta)
         self.session.commit()
 
+    def get_all(self):
+        return self.session.query(Consulta).all()
 
 class FakeConsultaRepository(AbstractConsultaRepository):
     def __init__(self):
@@ -64,6 +78,9 @@ class FakeConsultaRepository(AbstractConsultaRepository):
         for consulta in self.consultas:
             if consulta.id == consulta_id:
                 return consulta
+
+    def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
+        return [consulta for consulta in self.consultas if consulta.paciente_id == paciente_id]
 
     def get_by_medico_id(self, medico_id: str) -> List[Consulta]:
         return [consulta for consulta in self.consultas if consulta.medico_id == medico_id]
@@ -84,3 +101,6 @@ class FakeConsultaRepository(AbstractConsultaRepository):
             if c.id == consulta_id:
                 del self.consultas[i]
                 break
+
+    def get_all(self):
+        return self.consultas
