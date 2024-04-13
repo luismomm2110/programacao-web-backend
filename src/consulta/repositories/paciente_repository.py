@@ -10,6 +10,10 @@ class AbstractPacienteRepository(ABC):
         pass
 
     @abstractmethod
+    def get_by_email(self, email: str) -> Paciente:
+        pass
+
+    @abstractmethod
     def get_all(self) -> List[Paciente]:
         pass
 
@@ -61,6 +65,12 @@ class FakePacienteRepository(AbstractPacienteRepository):
     def get(self, paciente_id: int) -> Paciente:
         for paciente in self.pacientes:
             if paciente.id == paciente_id:
+                return paciente
+        return None
+
+    def get_by_email(self, email: str) -> Paciente:
+        for paciente in self.pacientes:
+            if paciente.email == email:
                 return paciente
         return None
 

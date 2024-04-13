@@ -1,8 +1,6 @@
-import random
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from flask_jwt_extended import JWTManager, create_access_token
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -10,11 +8,9 @@ from sqlalchemy.orm import sessionmaker
 import consulta.services.pacientes_services
 import orm
 from auth.auth_repository import SqlAlchemyAuthUserRepository
-from consulta.domain.models.model import Medico
 from consulta.repositories.medico_repository import SqlAlchemyMedicoRepository
 from consulta.repositories.paciente_repository import SqlAlchemyPacienteRepository
 from consulta.services.medicos_services import criar_medico
-from services import consulta_services
 
 
 engine = create_engine('postgresql://user:password@localhost:5432/consultas')
