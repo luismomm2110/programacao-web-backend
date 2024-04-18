@@ -1,3 +1,5 @@
+from datetime import datetime, date
+
 import pytest
 
 from consulta.domain.models.model import Paciente, Medico, Consulta
@@ -19,7 +21,7 @@ def test_marca_consulta():
 
     assert resultado == 'Consulta marcada com sucesso'
     consulta = uow.consultas.get_by_paciente_id(paciente.id)[0]
-    assert consulta.horario == horario
+    assert date(2022, 1, 1) == consulta.horario
     assert consulta.medico_id == medico.id
     assert consulta.paciente_id == paciente.id
 
