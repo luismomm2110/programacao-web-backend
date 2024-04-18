@@ -1,5 +1,4 @@
 from consulta.domain.models.model import Paciente, Medico
-from consulta.repositories import medico_repository
 from consulta.services.consulta_services import marcar_consulta
 from consulta.services.medicos_services import tem_horario_disponivel, criar_medico
 from consulta.services.unit_of_work import FakeUnitOfWork
@@ -10,7 +9,7 @@ def test_pode_marcar_consulta_quando_tem_horario_disponivel():
     medico = _criar_medico()
     paciente = _criar_paciente()
     criar_medico(medico.nome, medico.crm, uow)
-    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': '2022-01-01'}
+    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': '2022-01-01', 'email': paciente.email}
     marcar_consulta(dados, uow)
 
     resultado = tem_horario_disponivel(medico.id, '2022-02-01', uow)
@@ -24,7 +23,7 @@ def test_nao_pode_marcar_consulta_quando_nao_tem_horario_disponivel():
     uow.medicos.add(medico)
     paciente = _criar_paciente()
     uow.pacientes.create(paciente)
-    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': '2022-01-01'}
+    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': '2022-01-01', 'email': paciente.email}
     marcar_consulta(dados, uow)
 
     resultado = tem_horario_disponivel(medico.id, '2022-01-01', uow)

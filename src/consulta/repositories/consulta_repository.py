@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from datetime import date, datetime
 from typing import List
 
 from consulta.domain.models.model import Consulta
@@ -86,6 +87,7 @@ class FakeConsultaRepository(AbstractConsultaRepository):
         return [consulta for consulta in self.consultas if consulta.medico_id == medico_id]
 
     def add(self, consulta: Consulta) -> None:
+        consulta.horario = datetime.strptime(consulta.horario, "%Y-%m-%d").date()
         self.consultas.append(consulta)
 
     def list(self) -> List[Consulta]:

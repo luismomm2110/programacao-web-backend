@@ -13,7 +13,7 @@ def test_marca_consulta():
     uow.pacientes.create(paciente)
     uow.medicos.add(medico)
     horario = '2022-01-01'
-    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': horario}
+    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': horario, 'email': paciente.email}
 
     resultado = marcar_consulta(dados, uow)
 
@@ -27,13 +27,14 @@ def test_marca_consulta():
 def test_deve_retornar_horario_indisponivel():
     uow = FakeUnitOfWork()
     paciente, medico = _criar_paciente(), _criar_medico()
+    uow.pacientes.create(paciente)
     uow.medicos.add(medico)
     horario = '2022-01-01'
-    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': horario}
+    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': horario, 'email': paciente.email}
     marcar_consulta(dados, uow)
 
     outro_paciente = _criar_paciente(paciente_id=2, nome='Maria', cpf='123.456.789-00')
-    dados = {'paciente_id': outro_paciente.id, 'medico_id': medico.id, 'horario': horario}
+    dados = {'paciente_id': outro_paciente.id, 'medico_id': medico.id, 'horario': horario, 'email': outro_paciente.email}
     resultado = marcar_consulta(dados, uow)
 
     assert resultado == 'Horário indisponível'
@@ -44,7 +45,7 @@ def test_deve_retornar_medico_nao_encontrado():
     uow = FakeUnitOfWork()
     paciente = _criar_paciente()
     horario = '2022-01-01'
-    dados = {'paciente_id': paciente.id, 'medico_id': '123', 'horario': horario}
+    dados = {'paciente_id': paciente.id, 'medico_id': '123', 'horario': horario, 'email': paciente.email}
 
     resultado = marcar_consulta(dados, uow)
 
