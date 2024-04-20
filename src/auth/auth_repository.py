@@ -4,8 +4,12 @@ from sqlalchemy.orm import Session
 
 from auth.model import AuthUser
 
+
 class AbstractAuthUserRepository:
     def get_user_by_email(self, email: str) -> Type[AuthUser] | None:
+        raise NotImplementedError
+
+    def get_user_by_id(self, user_id: str) -> Type[AuthUser] | None:
         raise NotImplementedError
 
     def add(self, user: AuthUser) -> None:
@@ -19,6 +23,9 @@ class SqlAlchemyAuthUserRepository(AbstractAuthUserRepository):
     def get_user_by_email(self, email: str) -> Type[AuthUser] | None:
         return self.session.query(AuthUser).filter_by(email=email).first()
 
+    def get_user_by_id(self, user_id: str) -> Type[AuthUser] | None:
+        return self.session.query(AuthUser).filter_by(id=user_id).first()
+
     def add(self, user: AuthUser) -> None:
         self.session.add(user)
 
@@ -30,6 +37,11 @@ class FakeAuthUserRepository(AbstractAuthUserRepository):
     def get_user_by_email(self, email: str) -> Type[AuthUser] | None:
         for user in self.users:
             if user.email == email:
+                return user
+
+    def get_user_by_id(self, user_id: str) -> Type[AuthUser] | None:
+        for user in self.users:
+            if user.id == user_id:
                 return user
 
     def add(self, user: AuthUser) -> None:

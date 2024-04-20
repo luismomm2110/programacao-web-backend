@@ -16,13 +16,13 @@ class AbstractUnitOfWork(ABC):
     auth_user: AbstractAuthUserRepository
 
     def __enter__(self):
-        raise NotImplementedError
+        pass
 
     def __exit__(self, *args):
         self.rollback()
 
     @abstractmethod
-    def commit (self):
+    def commit(self):
         raise NotImplementedError
 
     @abstractmethod
