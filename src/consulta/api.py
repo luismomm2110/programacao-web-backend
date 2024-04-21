@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker
 
 import consulta.services.pacientes_services
 import orm
-from auth import auth_repository
 from auth.auth_repository import SqlAlchemyAuthUserRepository
 from consulta.repositories.medico_repository import SqlAlchemyMedicoRepository
 from consulta.repositories.paciente_repository import SqlAlchemyPacienteRepository
@@ -88,13 +87,15 @@ def criar_consulta():
     auth_id = get_jwt_identity()
     email_paciente = auth_repository.get_user_by_id(auth_id).email
     uow = unit_of_work.SqlAlchemyUnitOfWork(session)
-    consulta_id = marcar_consulta(
+    consulta_id, erro = marcar_consulta(
         {
             **request.json,
             'email': email_paciente
         },
         uow
     )
+    if erro:
+        return erro, 400
     return jsonify({"id": consulta_id}), 201
 
 

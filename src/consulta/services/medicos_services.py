@@ -8,7 +8,10 @@ from consulta.services.unit_of_work import AbstractUnitOfWork
 def tem_horario_disponivel(medico_id, data, uow):
     with uow:
         consultas = uow.consultas.get_by_medico_id(medico_id)
-        data_convertida = datetime.strptime(data, "%Y-%m-%d").date()
+        try: 
+            data_convertida = datetime.strptime(data, "%Y-%m-%d").date()
+        except ValueError:
+            raise ValueError('Formato de data inválido. Use o formato YYYY-MM-DD')
         return data_convertida not in {consulta.horario for consulta in consultas}
 
 

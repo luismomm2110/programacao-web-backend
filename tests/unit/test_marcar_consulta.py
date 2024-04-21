@@ -17,9 +17,10 @@ def test_marca_consulta():
     horario = '2022-01-01'
     dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': horario, 'email': paciente.email}
 
-    resultado = marcar_consulta(dados, uow)
+    resultado, erro = marcar_consulta(dados, uow)
 
     assert resultado == 'Consulta marcada com sucesso'
+    assert erro is None
     consulta = uow.consultas.get_by_paciente_id(paciente.id)[0]
     assert date(2022, 1, 1) == consulta.horario
     assert consulta.medico_id == medico.id
@@ -37,22 +38,47 @@ def test_deve_retornar_horario_indisponivel():
 
     outro_paciente = _criar_paciente(paciente_id=2, nome='Maria', cpf='123.456.789-00')
     dados = {'paciente_id': outro_paciente.id, 'medico_id': medico.id, 'horario': horario, 'email': outro_paciente.email}
-    resultado = marcar_consulta(dados, uow)
+    _, erro = marcar_consulta(dados, uow)
 
-    assert resultado == 'Horário indisponível'
+    assert erro == 'Horário indisponível'
     assert len(uow.consultas.get_all()) == 1
 
 
 def test_deve_retornar_medico_nao_encontrado():
     uow = FakeUnitOfWork()
     paciente = _criar_paciente()
+    uow.pacientes.create(paciente)
     horario = '2022-01-01'
     dados = {'paciente_id': paciente.id, 'medico_id': '123', 'horario': horario, 'email': paciente.email}
 
-    resultado = marcar_consulta(dados, uow)
+    _, erro = marcar_consulta(dados, uow)
 
-    assert resultado == 'Médico não encontrado'
+    assert erro == 'Médico não encontrado'
     assert len(uow.consultas.get_all()) == 0
+
+def test_deve_retornar_paciente_nao_encontrado():
+    uow = FakeUnitOfWork()
+    medico = _criar_medico()
+    uow.medicos.add(medico)
+    horario = '2022-01-01'
+    dados = {'paciente_id': '123', 'medico_id': medico.id, 'horario': horario, 'email': 'foobar'}
+
+    _, erro = marcar_consulta(dados, uow)
+
+    assert erro == 'Paciente não encontrado'
+
+
+def test_deve_retornar_erro_quando_data_invalida():
+    uow = FakeUnitOfWork()
+    paciente, medico = _criar_paciente(), _criar_medico()
+    uow.pacientes.create(paciente)
+    uow.medicos.add(medico)
+    horario = 'foo'
+    dados = {'paciente_id': paciente.id, 'medico_id': medico.id, 'horario': horario, 'email': paciente.email}
+    with pytest.raises(ValueError) as excinfo:
+        marcar_consulta(dados, uow)
+
+    assert str(excinfo.value) == 'Formato de data inválido. Use o formato YYYY-MM-DD'
 
 
 def _criar_paciente(**kwargs):
