@@ -9,3 +9,8 @@ COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+
+ENV PYTHONPATH "${PYTHONPATH}:/app/src"
+
+# Run src/consultas/api.py when the container launches
+CMD ["python", "src/consultas/api.py"]

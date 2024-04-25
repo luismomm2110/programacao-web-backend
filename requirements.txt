@@ -8,3 +8,5 @@ typing_extensions==4.10.0
 Werkzeug~=3.0.2
 Flask~=3.0.2
 psycopg2-binary==2.9.3
+flask-jwt-extended==4.6.0
+flask-cors==3.0.10
