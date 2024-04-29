@@ -80,6 +80,7 @@ class Consulta:
     
     def to_json(self):
         return {
+            'id': self.id,
             'medico_id': self.medico_id,
             'paciente_id': self.paciente_id,
             'horario': self.horario.isoformat()

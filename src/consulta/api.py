@@ -123,6 +123,14 @@ def listar_consultas_paciente(user_id):
             consultas_retornadas.append(consulta_json)
         return jsonify(consultas_retornadas)
     
+@app.route('/consultas/<int:consulta_id>', methods=['DELETE'])
+def deletar_consulta(consulta_id):
+    session = get_session()
+    uow = unit_of_work.SqlAlchemyUnitOfWork(session)
+    with uow:
+        uow.consultas.delete(consulta_id)
+    return '', 204
+    
 @app.route('/pacientes', methods=['GET'])
 def listar_pacientes():
     session = get_session()
