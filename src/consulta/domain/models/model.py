@@ -22,6 +22,13 @@ class Paciente:
     def __hash__(self):
         return hash(self.cpf)
 
+    def to_json(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'email': self.email,
+            'cpf': self.cpf
+        }
 
 class Medico:
     def __init__(self, medico_id: int, nome: str, crm: str):
@@ -71,3 +78,9 @@ class Consulta:
             return False
         return self.medico_id == other.medico_id and self.paciente_id == other.paciente_id and self.horario == other.horario
     
+    def to_json(self):
+        return {
+            'medico_id': self.medico_id,
+            'paciente_id': self.paciente_id,
+            'horario': self.horario.isoformat()
+        }
