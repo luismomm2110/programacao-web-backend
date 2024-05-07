@@ -22,4 +22,4 @@ def criar_medico(nome, crm, uow: AbstractUnitOfWork):
         uow.medicos.add(medico)
         uow.commit()
 
-        return medico
+        return medico.to_json()

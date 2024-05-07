@@ -6,9 +6,18 @@ from consulta.domain.models.model import Consulta
 
 
 class AbstractConsultaRepository(ABC):
-    @abstractmethod
+    def __init__(self):
+        self.seen = set()
+
     def get(self, consulta_id: str) -> Consulta:
-        pass
+        consulta = self._get(consulta_id)
+        if consulta:
+            self.seen.add(consulta)
+        return consulta
+    
+    @abstractmethod
+    def _get(self, consulta_id: str) -> Consulta:
+        raise NotImplementedError
 
     @abstractmethod
     def get_by_medico_id(self, medico_id: str) -> List[Consulta]:
@@ -18,8 +27,12 @@ class AbstractConsultaRepository(ABC):
     def get_by_paciente_id(self, paciente_id: int) -> List[Consulta]:
         pass
 
-    @abstractmethod
     def add(self, consulta: Consulta) -> None:
+        self._add(consulta)
+        self.seen.add(consulta)
+
+    @abstractmethod
+    def _add(self, consulta: Consulta) -> None:
         pass
 
     @abstractmethod
@@ -43,22 +56,32 @@ class AbstractConsultaRepository(ABC):
         pass
 
 class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
+    def __init__(self, session):
+        super().__init__()
+        self.session = session
 
     def __init__(self, session):
         self.session = session
 
-    def get(self, consulta_id: str) -> Consulta:
+    def _get(self, consulta_id: str) -> Consulta:
         return self.session.query(Consulta).filter_by(id=consulta_id).first()
 
     def get_by_medico_id(self, medico_id: str) -> List[Consulta]:
-        return self.session.query(Consulta).filter_by(medico_id=medico_id).all()
+        consulta = self.session.query(Consulta).filter_by(medico_id=medico_id).all()
+        if consulta:
+            self.seen.add(consulta)
+            return consulta
+        return []
 
     def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
-        return self.session.query(Consulta).filter_by(paciente_id=paciente_id).all()
+        consulta = self.session.query(Consulta).filter_by(paciente_id=paciente_id).all()
+        if consulta:
+            self.seen.add(consulta)
+            return consulta
+        return []
 
-    def add(self, consulta: Consulta) -> None:
+    def _add(self, consulta: Consulta) -> None:
         self.session.add(consulta)
-        self.session.commit()
 
     def list(self) -> List[Consulta]:
         return self.session.query(Consulta).all()
@@ -79,22 +102,28 @@ class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
 
 class FakeConsultaRepository(AbstractConsultaRepository):
     def __init__(self):
-        self.consultas = []
+        super().__init__()
+        self._consultas = []
 
-    def get(self, consulta_id: str) -> Consulta:
-        for consulta in self.consultas:
+    def _get(self, consulta_id: str) -> Consulta:
+        for consulta in self._consultas:
             if consulta.id == consulta_id:
                 return consulta
+        return None
 
     def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
-        return [consulta for consulta in self.consultas if consulta.paciente_id == paciente_id]
+        consultas = [consulta for consulta in self._consultas if consulta.paciente_id == paciente_id]
+        self.seen.update(consultas)
+        return consultas
+
 
     def get_by_medico_id(self, medico_id: str) -> List[Consulta]:
-        return [consulta for consulta in self.consultas if consulta.medico_id == medico_id]
+        consultas = [consulta for consulta in self._consultas if consulta.medico_id == medico_id]
+        self.seen.update(consultas)
+        return consultas
 
-    def add(self, consulta: Consulta) -> None:
-        consulta.horario = datetime.strptime(consulta.horario, "%Y-%m-%d").date()
-        self.consultas.append(consulta)
+    def _add(self, consulta: Consulta) -> None:
+        self._consultas.append(consulta)
 
     def list(self) -> List[Consulta]:
         return self.consultas
@@ -111,7 +140,9 @@ class FakeConsultaRepository(AbstractConsultaRepository):
                 break
 
     def get_all(self):
-        return self.consultas
+        return self._consultas
     
     def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
-        return [consulta for consulta in self.consultas if consulta.paciente_id == paciente_id]
+        consultas = [consulta for consulta in self._consultas if consulta.paciente_id == paciente_id]
+        self.seen.update(consultas)
+        return consultas

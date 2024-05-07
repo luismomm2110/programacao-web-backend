@@ -35,7 +35,7 @@ class Medico:
         self.id = medico_id
         self.nome = nome
         self.crm = crm
-        self.agenda: dict = {}
+        self.eventos = []
 
     def pode_agendar_consulta(self, horario: date):
         return horario not in {consulta.horario for consulta in self.agenda.values()}
@@ -72,6 +72,7 @@ class Consulta:
     medico_id: int
     paciente_id: int
     horario: date
+    events = []
 
     def __eq__(self, other):
         if not isinstance(other, Consulta):
@@ -85,3 +86,4 @@ class Consulta:
             'paciente_id': self.paciente_id,
             'horario': self.horario.isoformat()
         }
+    

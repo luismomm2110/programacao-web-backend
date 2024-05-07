@@ -21,14 +21,22 @@ class AbstractUnitOfWork(ABC):
     def __exit__(self, *args):
         self.rollback()
 
-    @abstractmethod
     def commit(self):
-        raise NotImplementedError
+        self._commit()
+        self.publish_events()
 
     @abstractmethod
     def rollback (self):
         raise NotImplementedError
 
+    def _commit(self):
+        raise NotImplementedError
+    
+    def publish_events(self):
+        for consulta in self.consultas.seen:
+            for domain_event in consulta.events:
+                self.events.publish(domain_event)
+        
 
 engine = create_engine('postgresql://user:password@localhost:5432/consultas')
 DEFAULT_SESSION_FACTORY = sessionmaker(bind=engine)
@@ -56,6 +64,9 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def rollback(self):
         self.session.rollback()
 
+    def _commit(self):
+        self.session.commit()
+
 
 class FakeUnitOfWork(AbstractUnitOfWork):
     def __init__(self):
@@ -71,7 +82,7 @@ class FakeUnitOfWork(AbstractUnitOfWork):
     def __exit__(self, *args):
         pass
 
-    def commit(self):
+    def _commit(self):
         self.committed = True
 
     def rollback(self):

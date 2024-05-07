@@ -56,7 +56,7 @@ def cria_medico():
         )
     except ValueError as e:
         return str(e), 400
-    return jsonify({"id": medico.id}), 201
+    return jsonify({"id": medico['id']}), 201
 
 
 @app.route('/pacientes', methods=['POST'])
