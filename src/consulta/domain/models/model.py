@@ -22,13 +22,20 @@ class Paciente:
     def __hash__(self):
         return hash(self.cpf)
 
+    def to_json(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'email': self.email,
+            'cpf': self.cpf
+        }
 
 class Medico:
     def __init__(self, medico_id: int, nome: str, crm: str):
         self.id = medico_id
         self.nome = nome
         self.crm = crm
-        self.agenda: dict = {}
+        self.eventos = []
 
     def pode_agendar_consulta(self, horario: date):
         return horario not in {consulta.horario for consulta in self.agenda.values()}
@@ -65,9 +72,18 @@ class Consulta:
     medico_id: int
     paciente_id: int
     horario: date
+    events = []
 
     def __eq__(self, other):
         if not isinstance(other, Consulta):
             return False
         return self.medico_id == other.medico_id and self.paciente_id == other.paciente_id and self.horario == other.horario
+    
+    def to_json(self):
+        return {
+            'id': self.id,
+            'medico_id': self.medico_id,
+            'paciente_id': self.paciente_id,
+            'horario': self.horario.isoformat()
+        }
     

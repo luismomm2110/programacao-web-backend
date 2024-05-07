@@ -8,8 +8,8 @@ from consulta.services.unit_of_work import AbstractUnitOfWork
 def tem_horario_disponivel(medico_id, data, uow):
     with uow:
         consultas = uow.consultas.get_by_medico_id(medico_id)
-        data_convertida = datetime.strptime(data, "%Y-%m-%d").date()
-        return data_convertida not in {consulta.horario for consulta in consultas}
+        import pdb; pdb.set_trace()
+        return data not in {consulta.horario for consulta in consultas}
 
 
 def criar_medico(nome, crm, uow: AbstractUnitOfWork):
@@ -22,4 +22,4 @@ def criar_medico(nome, crm, uow: AbstractUnitOfWork):
         uow.medicos.add(medico)
         uow.commit()
 
-        return medico
+        return medico.to_json()

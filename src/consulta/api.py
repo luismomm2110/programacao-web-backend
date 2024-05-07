@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import consulta.services.pacientes_services
-import orm
+import consulta.orm as orm
 from auth import auth_repository
 from auth.auth_repository import SqlAlchemyAuthUserRepository
 from consulta.repositories.medico_repository import SqlAlchemyMedicoRepository
@@ -16,15 +16,22 @@ from consulta.services.consulta_services import marcar_consulta
 from consulta.services.medicos_services import criar_medico
 
 
-engine = create_engine('postgresql://user:password@localhost:5432/consultas')
-get_session = sessionmaker(bind=engine)
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+connection_string = 'postgresql+psycopg2://postgres:postgres@localhost:5432/consultas'
+logger.debug(f"Creating engine with connection string: {connection_string}")
+engine = create_engine(connection_string)
+get_session = sessionmaker(bind=engine, expire_on_commit=False)
 app = Flask(__name__)
 orm.start_mappers()
 orm.metadata.create_all(engine)
 
 app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # Change this!
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
-jwt = JWTManager(app)
+ewt = JWTManager(app)
 
 CORS(app, suports_credentials=True)
 
@@ -40,30 +47,26 @@ def listar_medicos():
 @app.route('/medicos', methods=['POST'])
 def cria_medico():
     session = get_session()
-    medico_repository = SqlAlchemyMedicoRepository(session)
+    uow = unit_of_work.SqlAlchemyUnitOfWork(session)
     try:
         medico = criar_medico(
-            session,
-            medico_repository,
             request.json['nome'],
-            request.json['crm']
+            request.json['crm'],
+            uow
         )
     except ValueError as e:
         return str(e), 400
-    return jsonify({"id": medico.id}), 201
+    return jsonify({"id": medico['id']}), 201
 
 
 @app.route('/pacientes', methods=['POST'])
 def criar_paciente():
     session = get_session()
-    auth_repository = SqlAlchemyAuthUserRepository(session)
-    paciente_repository = SqlAlchemyPacienteRepository(session)
+    uow = unit_of_work.SqlAlchemyUnitOfWork(session)
     try:
         paciente = consulta.services.pacientes_services.criar_conta_paciente(
-            auth_repository,
-            paciente_repository,
             request.json,
-            session
+            uow
         )
     except ValueError as e:
         return str(e), 400
@@ -76,9 +79,17 @@ def login():
     auth_repository = SqlAlchemyAuthUserRepository(session)
     user = auth_repository.get_user_by_email(request.json['email'])
     if user and user.password == request.json['password']:
-        return jsonify({"token": create_access_token(identity=user.id)}), 200
+        return jsonify({"token": create_access_token(identity=user.id), "id": user.id}), 200
     return '', 401
 
+@app.route('/consultas', methods=['GET'])
+def listar_consultas():
+    session = get_session()
+    uow = unit_of_work.SqlAlchemyUnitOfWork(session)
+    consultas = []
+    with uow:
+        consultas = uow.consultas.list()
+        return jsonify([consulta for consulta in consultas])
 
 @app.route('/consultas', methods=['POST'])
 @jwt_required()
@@ -97,6 +108,35 @@ def criar_consulta():
     )
     return jsonify({"id": consulta_id}), 201
 
+@app.route('/pacientes/<int:user_id>/consultas', methods=['GET'])
+def listar_consultas_paciente(user_id):
+    session = get_session()
+    uow = unit_of_work.SqlAlchemyUnitOfWork(session)
+    auth_user_repository = SqlAlchemyAuthUserRepository(session)
+    user = auth_user_repository.get_user_by_id(user_id)
+    consultas_retornadas = []
+    with uow:
+        consultas = uow.consultas.get_by_paciente_id(user.entity_id)
+        for consulta in consultas:
+            consulta_json = consulta.to_json()
+            consulta_json['medico']= uow.medicos.get(consulta_json['medico_id']).to_json()
+            consultas_retornadas.append(consulta_json)
+        return jsonify(consultas_retornadas)
+    
+@app.route('/consultas/<int:consulta_id>', methods=['DELETE'])
+def deletar_consulta(consulta_id):
+    session = get_session()
+    uow = unit_of_work.SqlAlchemyUnitOfWork(session)
+    with uow:
+        uow.consultas.delete(consulta_id)
+    return '', 204
+    
+@app.route('/pacientes', methods=['GET'])
+def listar_pacientes():
+    session = get_session()
+    paciente_repository = SqlAlchemyPacienteRepository(session)
+    pacientes = paciente_repository.get_all()
+    return [paciente.to_json() for paciente in pacientes]
 
 if __name__ == '__main__':
     app.run(port=5000)

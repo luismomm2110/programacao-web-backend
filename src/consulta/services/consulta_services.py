@@ -3,6 +3,7 @@ from datetime import date
 from consulta.domain.models.model import Consulta
 from consulta.services.medicos_services import tem_horario_disponivel
 from consulta.services.unit_of_work import AbstractUnitOfWork
+from consulta.domain.events.events import ConsultaCriada
 
 
 def marcar_consulta(dados, uow: AbstractUnitOfWork):
@@ -18,6 +19,13 @@ def marcar_consulta(dados, uow: AbstractUnitOfWork):
             paciente_id=paciente.id,
             horario=dados['horario']
         ))
+        medico.eventos.append(ConsultaCriada(
+            consulta_id=medico.id,
+            paciente_id=paciente.id,
+            medico_id=medico.id,
+            horario=dados['horario']
+        ))
+
 
         uow.commit()
 
