@@ -79,6 +79,7 @@ class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
             return consultas
         return []
 
+
     def _add(self, consulta: Consulta) -> None:
         self.session.add(consulta)
 
