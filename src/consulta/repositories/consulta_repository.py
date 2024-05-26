@@ -55,12 +55,10 @@ class AbstractConsultaRepository(ABC):
     def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
         pass
 
+
 class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
     def __init__(self, session):
         super().__init__()
-        self.session = session
-
-    def __init__(self, session):
         self.session = session
 
     def _get(self, consulta_id: str) -> Consulta:
@@ -74,11 +72,13 @@ class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
         return []
 
     def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
-        consulta = self.session.query(Consulta).filter_by(paciente_id=paciente_id).all()
-        if consulta:
-            self.seen.add(consulta)
-            return consulta
+        consultas = self.session.query(Consulta).filter_by(paciente_id=paciente_id).all()
+        if consultas:
+            for consulta in consultas:
+                self.seen.add(consulta)
+            return consultas
         return []
+
 
     def _add(self, consulta: Consulta) -> None:
         self.session.add(consulta)
@@ -97,8 +97,7 @@ class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
     def get_all(self):
         return self.session.query(Consulta).all()
 
-    def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
-        return self.session.query(Consulta).filter_by(paciente_id=paciente_id).all()
+
 
 class FakeConsultaRepository(AbstractConsultaRepository):
     def __init__(self):

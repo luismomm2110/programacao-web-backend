@@ -1,7 +1,5 @@
-import uuid
-
-from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Date, UUID
-from sqlalchemy.orm import mapper, relationship, registry
+from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Date, UUID, event
+from sqlalchemy.orm import relationship, registry
 
 from consulta.domain.models import model
 from auth import model as auth_model
@@ -12,7 +10,7 @@ medicos = Table(
     'medico', metadata,
     Column('id', Integer, primary_key=True),
     Column('nome', String(50)),
-    Column('crm', String(10))
+    Column('crm', String(10)),
 )
 
 
@@ -52,3 +50,8 @@ def start_mappers():
         'paciente': relationship(model.Paciente)
     })
     reg.map_imperatively(auth_model.AuthUser, users)
+
+
+@event.listens_for(model.Medico, 'load')
+def receive_load(medico, _):
+    medico.events = []

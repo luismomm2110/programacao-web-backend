@@ -1,5 +1,4 @@
-from datetime import date
-
+from consulta.adapters.rabbitmq_eventpublisher import RabbitMQEventPublisher
 from consulta.domain.models.model import Consulta
 from consulta.services.medicos_services import tem_horario_disponivel
 from consulta.services.unit_of_work import AbstractUnitOfWork
@@ -19,16 +18,25 @@ def marcar_consulta(dados, uow: AbstractUnitOfWork):
             paciente_id=paciente.id,
             horario=dados['horario']
         ))
-        medico.eventos.append(ConsultaCriada(
+        medico.events.append(ConsultaCriada(
             consulta_id=medico.id,
             paciente_id=paciente.id,
             medico_id=medico.id,
             horario=dados['horario']
         ))
 
-
+        rabbitmq = RabbitMQEventPublisher('localhost')
+        rabbitmq.publish(ConsultaCriada(
+            consulta_id=medico.id,
+            paciente_id=paciente.id,
+            medico_id=medico.id,
+            horario=dados['horario']
+        ))
         uow.commit()
 
         return 'Consulta marcada com sucesso'
 
 
+def handle_consulta_criada(event: ConsultaCriada, uow: AbstractUnitOfWork):
+    rq = RabbitMQEventPublisher('localhost')
+    rq.publish(event)

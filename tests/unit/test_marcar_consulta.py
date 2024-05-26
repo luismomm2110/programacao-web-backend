@@ -1,10 +1,7 @@
-from datetime import datetime, date
-
-import pytest
-
 from consulta.domain.models.model import Paciente, Medico, Consulta
 from consulta.services.consulta_services import marcar_consulta
 from consulta.services.unit_of_work import FakeUnitOfWork
+
 
 def test_marca_consulta():
     uow = FakeUnitOfWork()
@@ -34,7 +31,6 @@ def test_deve_retornar_horario_indisponivel():
 
     outro_paciente = _criar_paciente(paciente_id=2, nome='Maria', cpf='123.456.789-00')
     dados = {'paciente_id': outro_paciente.id, 'medico_id': medico.id, 'horario': horario, 'email': outro_paciente.email}
-    import pdb; pdb.set_trace()
     resultado = marcar_consulta(dados, uow)
 
     assert resultado == 'Horário indisponível'

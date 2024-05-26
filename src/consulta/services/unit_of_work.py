@@ -15,6 +15,9 @@ class AbstractUnitOfWork(ABC):
     pacientes: AbstractPacienteRepository
     auth_user: AbstractAuthUserRepository
 
+    def __init__(self):
+        self.events = []
+
     def __enter__(self):
         pass
 
@@ -34,9 +37,9 @@ class AbstractUnitOfWork(ABC):
     
     def publish_events(self):
         for consulta in self.consultas.seen:
-            for domain_event in consulta.events:
-                self.events.publish(domain_event)
-        
+            while consulta.events:
+                yield consulta.events.pop(0)
+
 
 engine = create_engine('postgresql://user:password@localhost:5432/consultas')
 DEFAULT_SESSION_FACTORY = sessionmaker(bind=engine)
@@ -44,6 +47,7 @@ DEFAULT_SESSION_FACTORY = sessionmaker(bind=engine)
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __init__(self, session_factory=DEFAULT_SESSION_FACTORY):
+        super().__init__()
         self.session_factory = session_factory
 
     def __enter__(self):
@@ -70,6 +74,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
 class FakeUnitOfWork(AbstractUnitOfWork):
     def __init__(self):
+        super().__init__()
         self.consultas = FakeConsultaRepository()
         self.medicos = FakeMedicoRepository()
         self.pacientes = FakePacienteRepository()
