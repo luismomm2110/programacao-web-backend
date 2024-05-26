@@ -65,10 +65,10 @@ class SqlAlchemyConsultaRepository(AbstractConsultaRepository):
         return self.session.query(Consulta).filter_by(id=consulta_id).first()
 
     def get_by_medico_id(self, medico_id: str) -> List[Consulta]:
-        consulta = self.session.query(Consulta).filter_by(medico_id=medico_id).all()
-        if consulta:
+        consultas = self.session.query(Consulta).filter_by(medico_id=medico_id).all()
+        for consulta in consultas:
             self.seen.add(consulta)
-            return consulta
+            return consultas
         return []
 
     def get_by_paciente_id(self, paciente_id: str) -> List[Consulta]:
