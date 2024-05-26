@@ -10,3 +10,11 @@ class ConsultaCriada(Event):
     paciente_id: int
     medico_id: int
     horario: date
+
+    def to_json(self):
+        return {
+            'consulta_id': self.consulta_id,
+            'paciente_id': self.paciente_id,
+            'medico_id': self.medico_id,
+            'horario': self.horario
+        }
