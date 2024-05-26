@@ -30,12 +30,13 @@ class Paciente:
             'cpf': self.cpf
         }
 
+
 class Medico:
     def __init__(self, medico_id: int, nome: str, crm: str):
         self.id = medico_id
         self.nome = nome
         self.crm = crm
-        self.eventos = []
+        self.events = []
 
     def pode_agendar_consulta(self, horario: date):
         return horario not in {consulta.horario for consulta in self.agenda.values()}

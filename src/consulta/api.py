@@ -21,7 +21,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-connection_string = 'postgresql+psycopg2://postgres:postgres@localhost:5432/consultas'
+connection_string = 'postgresql+psycopg2://postgres:postgres@localhost/consultas'
 logger.debug(f"Creating engine with connection string: {connection_string}")
 engine = create_engine(connection_string)
 get_session = sessionmaker(bind=engine, expire_on_commit=False)
@@ -91,6 +91,7 @@ def listar_consultas():
         consultas = uow.consultas.list()
         return jsonify([consulta for consulta in consultas])
 
+
 @app.route('/consultas', methods=['POST'])
 @jwt_required()
 def criar_consulta():
@@ -108,6 +109,7 @@ def criar_consulta():
     )
     return jsonify({"id": consulta_id}), 201
 
+
 @app.route('/pacientes/<int:user_id>/consultas', methods=['GET'])
 def listar_consultas_paciente(user_id):
     session = get_session()
@@ -119,7 +121,7 @@ def listar_consultas_paciente(user_id):
         consultas = uow.consultas.get_by_paciente_id(user.entity_id)
         for consulta in consultas:
             consulta_json = consulta.to_json()
-            consulta_json['medico']= uow.medicos.get(consulta_json['medico_id']).to_json()
+            consulta_json['medico'] = uow.medicos.get(consulta_json['medico_id']).to_json()
             consultas_retornadas.append(consulta_json)
         return jsonify(consultas_retornadas)
     
