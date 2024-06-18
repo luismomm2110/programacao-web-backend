@@ -82,6 +82,7 @@ def login():
         return jsonify({"token": create_access_token(identity=user.id), "id": user.id}), 200
     return '', 401
 
+
 @app.route('/consultas', methods=['GET'])
 def listar_consultas():
     session = get_session()
@@ -124,14 +125,32 @@ def listar_consultas_paciente(user_id):
             consulta_json['medico'] = uow.medicos.get(consulta_json['medico_id']).to_json()
             consultas_retornadas.append(consulta_json)
         return jsonify(consultas_retornadas)
-    
+
+
+@app.route('/medicos/<int:user_id>/consultas', methods=['GET'])
+def listar_consultas_medico(user_id):
+    session = get_session()
+    uow = unit_of_work.SqlAlchemyUnitOfWork(session)
+    consultas_retornadas = []
+    with uow:
+        consultas = uow.consultas.get_by_medico_id(user_id)
+        medico = uow.medicos.get(user_id)
+        for consulta in consultas:
+            consulta_json = consulta.to_json()
+            consulta_json['paciente'] = uow.pacientes.get(consulta_json['paciente_id']).to_json()
+            consultas_retornadas.append(consulta_json)
+        ## return consultas_retornadas and nome
+        return {"consultas": consultas_retornadas, "nome": medico.nome}
+
 @app.route('/consultas/<int:consulta_id>', methods=['DELETE'])
 def deletar_consulta(consulta_id):
     session = get_session()
     uow = unit_of_work.SqlAlchemyUnitOfWork(session)
     with uow:
+        ## todo criar evento de deletar consulta
         uow.consultas.delete(consulta_id)
     return '', 204
+
     
 @app.route('/pacientes', methods=['GET'])
 def listar_pacientes():
