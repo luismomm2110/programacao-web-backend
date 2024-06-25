@@ -19,23 +19,21 @@ def marcar_consulta(dados, uow: AbstractUnitOfWork):
             horario=dados['horario']
         )
         uow.consultas.add(consulta)
-
-        try:
-            rabbitmq = RabbitMQEventPublisher('localhost')
-            rabbitmq.publish(ConsultaCriada(
-                ## todo nao ta criando consulta
-                consulta_id=consulta.id,
-                paciente_nome=paciente.nome,
-                medico_nome=medico.nome,
-                medico_id=medico.id,
-                paciente_id=paciente.id,
-                horario=dados['horario']
-            ).to_json())
-        except Exception as e:
-            print(e)
-            pass
         uow.commit()
-
+        for consulta in uow.consultas.seen:
+            try:
+                rabbitmq = RabbitMQEventPublisher('localhost')
+                rabbitmq.publish(ConsultaCriada(
+                    consulta_id=consulta.id,
+                    paciente_nome=paciente.nome,
+                    medico_nome=medico.nome,
+                    medico_id=medico.id,
+                    paciente_id=paciente.id,
+                    horario=dados['horario']
+                ).to_json())
+            except Exception as e:
+                print(e)
+                pass
         return 'Consulta marcada com sucesso'
 
 

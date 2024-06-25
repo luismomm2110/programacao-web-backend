@@ -9,6 +9,8 @@ import consulta.services.pacientes_services
 import consulta.orm as orm
 from auth import auth_repository
 from auth.auth_repository import SqlAlchemyAuthUserRepository
+from consulta.adapters.rabbitmq_eventpublisher import RabbitMQEventPublisher
+from consulta.domain.events.events import ConsultaCancelada, ConsultaCriada
 from consulta.repositories.medico_repository import SqlAlchemyMedicoRepository
 from consulta.repositories.paciente_repository import SqlAlchemyPacienteRepository
 from consulta.services import unit_of_work
@@ -147,8 +149,15 @@ def deletar_consulta(consulta_id):
     session = get_session()
     uow = unit_of_work.SqlAlchemyUnitOfWork(session)
     with uow:
-        ## todo criar evento de deletar consulta
         uow.consultas.delete(consulta_id)
+        try:
+            rabbitmq = RabbitMQEventPublisher('localhost')
+            rabbitmq.publish(ConsultaCancelada(
+                consulta_id=consulta_id
+            ).to_json())
+        except Exception as e:
+            print(e)
+            pass
     return '', 204
 
     
