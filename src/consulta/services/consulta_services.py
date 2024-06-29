@@ -22,7 +22,7 @@ def marcar_consulta(dados, uow: AbstractUnitOfWork):
         uow.commit()
         for consulta in uow.consultas.seen:
             try:
-                rabbitmq = RabbitMQEventPublisher('localhost')
+                rabbitmq = RabbitMQEventPublisher('localhost', 'consulta_marcada')
                 rabbitmq.publish(ConsultaCriada(
                     consulta_id=consulta.id,
                     paciente_nome=paciente.nome,

@@ -149,9 +149,13 @@ def deletar_consulta(consulta_id):
     session = get_session()
     uow = unit_of_work.SqlAlchemyUnitOfWork(session)
     with uow:
-        uow.consultas.delete(consulta_id)
         try:
-            rabbitmq = RabbitMQEventPublisher('localhost')
+            uow.consultas.delete(consulta_id)
+        except Exception as e:
+            print(e)
+            pass
+        try:
+            rabbitmq = RabbitMQEventPublisher('localhost', 'consulta_cancelada')
             rabbitmq.publish(ConsultaCancelada(
                 consulta_id=consulta_id
             ).to_json())
