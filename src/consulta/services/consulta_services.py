@@ -13,27 +13,27 @@ def marcar_consulta(dados, uow: AbstractUnitOfWork):
             return 'Médico não encontrado'
         if not tem_horario_disponivel(medico.id, dados['horario'], uow):
             return 'Horário indisponível'
-        uow.consultas.add(Consulta(
+        consulta = Consulta(
             medico_id=medico.id,
             paciente_id=paciente.id,
             horario=dados['horario']
-        ))
-        medico.events.append(ConsultaCriada(
-            consulta_id=medico.id,
-            paciente_id=paciente.id,
-            medico_id=medico.id,
-            horario=dados['horario']
-        ))
-
-        rabbitmq = RabbitMQEventPublisher('localhost')
-        rabbitmq.publish(ConsultaCriada(
-            consulta_id=medico.id,
-            paciente_id=paciente.id,
-            medico_id=medico.id,
-            horario=dados['horario']
-        ))
+        )
+        uow.consultas.add(consulta)
         uow.commit()
-
+        for consulta in uow.consultas.seen:
+            try:
+                rabbitmq = RabbitMQEventPublisher('localhost', 'consulta_marcada')
+                rabbitmq.publish(ConsultaCriada(
+                    consulta_id=consulta.id,
+                    paciente_nome=paciente.nome,
+                    medico_nome=medico.nome,
+                    medico_id=medico.id,
+                    paciente_id=paciente.id,
+                    horario=dados['horario']
+                ).to_json())
+            except Exception as e:
+                print(e)
+                pass
         return 'Consulta marcada com sucesso'
 
 
